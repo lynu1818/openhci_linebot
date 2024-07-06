@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from firebase_admin import storage
-from datetime import datetime
+from datetime import datetime, timedelta
 
 firebase_config = { 
 "apiKey": "AIzaSyDX02z0txD8x1hsW2A-MC7KSh9aMY_gHtE",
@@ -43,7 +43,7 @@ def write_text_message(user_id, message_content):
     # return reply
 
 def write_image_message(image_bytes, user_id):
-    timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp_str = read_date()
     file_name = f"{user_id}_{timestamp_str}.jpg"
     bucket = storage.bucket()
         
@@ -53,11 +53,10 @@ def write_image_message(image_bytes, user_id):
     image_url = blob.public_url
     
     
-    messages_ref = root_ref.child('image_messages')
+    messages_ref = root_ref.child(f'image_messages/{timestamp_str}')
     messages_ref.push({
         'from': user_id,
         'content': image_url,
-        'timestamp': timestamp_str
     })
     # reply = f'成功發送圖片訊息！'
 
@@ -77,6 +76,7 @@ def write_elder_phone(elder_phone, user_id):
     ref.set(elder_phone)
 
 def write_user_birthday(birthday, user_id):
+    print('write user birthday')
     ref = root_ref.child(f'users/{user_id}/birthday')
     ref.set(birthday)
 
@@ -190,6 +190,45 @@ def update_user_state(user_id, state):
     except Exception as e:
         print(f'Error updating user state {user_id}: {e}')
 
+def update_date():
+    date_ref = db.reference('date')
+    torn_ref = db.reference('torn')  # 新增对 torn 节点的引用
+    
+    try:
+        old_data = date_ref.get()
+        print("old data: ", old_data)
+        
+        if old_data is None:
+            old_data = "2024-07-06"  # 默认日期
+
+        current_date = datetime.strptime(old_data, "%Y-%m-%d")
+        next_date = current_date + timedelta(days=1)
+        new_data = next_date.strftime("%Y-%m-%d")
+        
+        date_ref.set(new_data)
+        print(f"Updated date to {new_data}")
+        
+        torn_ref.set(False)  # 使用 update() 方法更新 torn 节点
+        print("Updated torn to False")
+    except Exception as e:
+        print(f"Failed to update date or torn: {e}")
+
+def write_torn():
+    torn_ref = db.reference('torn')
+    
+    try:
+        torn_ref.set(True)
+        print("Updated torn to True")
+    except Exception as e:
+        print(f"Failed to update date or torn: {e}")
+
+def read_date():
+    try:
+        ref = db.reference('date')
+        return ref.get()
+    except Exception as e:
+        print(f"Error fetching date: {e}")
+        return False 
 
 # /users
 #    /userId {LINE Bot userId}
@@ -215,3 +254,9 @@ def update_user_state(user_id, state):
 #      /content {text/imageURL}
 #      /from {userId}
 #      /timestamp
+
+
+# /date (for demo)
+#    2024-07-06
+# /torn
+#    True or False

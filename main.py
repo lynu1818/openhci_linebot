@@ -3,7 +3,7 @@ from flask import Flask, request
 import json
 
 from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import UnfollowEvent, ImageMessage, ButtonsTemplate, TemplateSendMessage, PostbackTemplateAction, MessageEvent, TextMessage, ImageSendMessage, FlexSendMessage, FollowEvent, PostbackEvent, TextSendMessage, LocationSendMessage, QuickReply, QuickReplyButton, MessageAction, DatetimePickerAction
 
 import os
@@ -50,6 +50,39 @@ def send_notification_message():
         message = random_notification_message(user_nickname, elder_name)
         line_bot_api.push_message(user_id, TextSendMessage(text=message))
 
+def send_no_tear_notification():
+    print("send no tear")
+    try:
+        users = model.fetch_all_users()
+        for user_id, user_data in users.items():
+            user_nickname = user_data.get('nickName')
+            elder_name = user_data.get('elderName')
+            if user_id:
+                line_bot_api.push_message(
+                    user_id, 
+                    TextSendMessage(text=f"嗨，{user_nickname}！\n我們注意到今天{elder_name}沒有與日曆互動。也許他今天有些忙碌，如果方便的話，抽空關心一下{elder_name}吧~確保他們一切都好！")
+                )
+    except LineBotApiError as e:
+        print(f"Unexpected error: {e}")
+
+
+def send_tear_notification():
+    print("send tear")
+    try:
+        users = model.fetch_all_users()
+        # print("users: ", users)
+        for user_id, user_data in users.items():
+            # print("user_id: ", user_id, "user_data: ", user_data)
+            user_nickname = user_data.get('nickName')
+            elder_name = user_data.get('elderName')
+            if user_id:
+                # print("if user id")
+                line_bot_api.push_message(
+                    user_id, 
+                    TextSendMessage(text=f"嗨！{user_nickname}，\n今天{elder_name}與日曆互動了！您的關心和分享讓他們每天都充滿喜悅。繼續保持這份互動，讓家人之間的感情更加親密吧！")
+                )
+    except LineBotApiError as e:
+        print(f"Unexpected error: {e}")
 
 # scheduler = BackgroundScheduler()
 # scheduler.add_job(send_notification_message, 'cron', hour=10, minute=31)
@@ -122,23 +155,27 @@ def arduino_get():
     print('OK')
     return 'OK'
 
+torn = False
+
 # TODO: Maybe 接收撕日曆的訊號
 @app.route("/arduino_post", methods=['POST'])
 def arduino_post():
     body = request.get_data(as_text=True)
     json_data = json.loads(body)
     print(json_data)
-    if json_data['done']:   # 有撕日曆
-        line_bot_api.push_message() # 傳送給所有 user
-
-        # maybe 紀錄有撕到 database
+    if json_data['torn']:   # 有撕日曆訊號
+        send_tear_notification()
+        model.write_torn()
+        
         # 更換螢幕顯示到今日的東西
-
+    torn = True     # maybe 紀錄有撕到 database
 
     return 'OK'
 
+def test_arduino_post():
+    send_tear_notification()
 
-
+#TODO: 加 emoji
 
 @app.route("/", methods=['POST'])
 def linebot():
@@ -156,8 +193,44 @@ def linebot():
 
 
 user_states = {}
+# TODO: 重傳 flex message 1
 flex_message = requests.get('https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2Ftemplate.json?alt=media&token=9361223b-fa27-4512-b865-cf92650c7265').json()
 flex_message2 = requests.get('https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2Ftemplate2.json?alt=media&token=6e60de93-c960-4dbb-ae6e-5ae05e52d799').json()
+birthday_picker_action = DatetimePickerAction(
+                label='選擇生日',
+                data='birthday_picker',
+                mode='date',  # 可以使用 'datetime' 來包含時間
+                initial='',
+                max='',
+                min=''
+            )
+birthday_picker_flex_message = {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "請選擇你的生日日期",
+                            "wrap": True
+                        }
+                    ]
+                },
+                "footer": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "button",
+                            "style": "primary",
+                            "color": "#9E7148",
+                            "action": birthday_picker_action
+                        }
+                    ]
+                }
+            }
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
@@ -174,8 +247,8 @@ def handle_text_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             messages=ImageSendMessage(
-                original_content_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F2.png?alt=media&token=b223dd37-f766-4b81-ba13-cd0530341fb0',
-                preview_image_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F2.png?alt=media&token=b223dd37-f766-4b81-ba13-cd0530341fb0'    
+                original_content_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F2.jpg?alt=media&token=cf1da200-7ae5-4b04-b149-48a68250479a',
+                preview_image_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F2.jpg?alt=media&token=cf1da200-7ae5-4b04-b149-48a68250479a'    
             )
         )
         user_states[user_id] = 'GET_NICKNAME'
@@ -199,14 +272,21 @@ def handle_text_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"""感謝你填寫基本資料！
-現在，來試試看發送一張照片或一段溫暖的文字給親人吧！讓他們感受到你的關心！
-                            
-請於下方/拍照/傳送照片/傳送文字""")
+                            現在，來試試看發送一張照片或一段溫暖的文字給親人吧！讓他們感受到你的關心！
+                            請於下方/拍照/傳送照片/傳送文字""")
         )
         user_states[user_id] = 'DONE'
     elif user_states[user_id] == 'DONE':
-        if(text == '到8:00了'):
+        global torn
+        if text == '到8:00了':
             send_notification_message()
+        elif text == '到12:00了':
+            model.update_date()
+            if not torn:
+                send_no_tear_notification()
+                torn = True
+        elif text == '撕日曆':     # !!! for test
+            test_arduino_post()
         else:
             model.write_text_message(user_id, text)
             model.update_user_text_message_count(user_id)
@@ -220,7 +300,7 @@ def handle_text_message(event):
 文字具有拉近心與心距離的力量。有空時，也請將這些溫暖化為語音，打個電話或親自探望{elder_name}吧！
 
 {elder_phone}
-(點按及可通話)
+(點按即可通話)
 
 本週累積關心訊息：{text_messages_count}天
 用文字的力量，讓你們的心更近！"""))
@@ -258,7 +338,7 @@ def handle_image_message(event):
 有時間也記得撥空打通電話或是與{elder_name}見個面吧！
 
 {elder_phone}
-(點按及可通話)
+(點按即可通話)
 
 本週累積上傳照片：{images_messages_count}天
 太棒了！繼續保持這份關愛吧！"""))
@@ -286,21 +366,30 @@ def handle_follow(event):
         print(f"Error getting user profile: {e}")
         user_name = "朋友"
 
-    welcome_message = f"""親愛的 {user_name}，
-你願意花一點時間，給親愛的家人傳送一張照片和一句溫暖的話嗎？無論是一張日常生活的照片，還是一句簡單的關心，都能讓他們感受到你的愛與關懷
-用你的心意，讓每一天都充滿溫情！
+    welcome_message1 = f"""親愛的{user_name}，
+今天願意花點時間傳送一張照片和一句溫暖的話給家人，讓他們感受到你的愛嗎？
 
-你可以把這個聊天室當作和長輩們互動的地方~ 直接傳送照片到這個聊天室，照片就會在長輩日曆播放囉！有什麼想跟長輩講的小叮嚀也可以直接在這裡輸入！希望能透過這小小的聊天室與日曆，溫暖你們的每一天~"""
+你可以把這個聊天室當作與長輩互動的地方~ 傳送照片和留言到這裡，就會顯示在他們的日曆上。希望這小小的聊天室與日曆，能溫暖你們的每一天！"""
+    welcome_message2 = r'請填寫基本資料$$'
 
-
-    text_message = TextSendMessage(text=welcome_message)
+    text_message1 = TextSendMessage(text=welcome_message1)
+    text_message2 = TextSendMessage(text=welcome_message2, emojis=[{
+        "index": 7,
+        "productId": "5ac21a18040ab15980c9b43e",
+        "emojiId": "003"
+      },
+      {
+        "index": 8,
+        "productId": "5ac21a18040ab15980c9b43e",
+        "emojiId": "003"
+      }])
     image_message = ImageSendMessage(
-        original_content_url=r"https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F1.png?alt=media&token=1a1a2a84-fbf9-414b-a4b7-0b47fc59f213",
-        preview_image_url=r"https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F1.png?alt=media&token=1a1a2a84-fbf9-414b-a4b7-0b47fc59f213"
+        original_content_url=r"https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F1.jpg?alt=media&token=5d3de029-4a61-4adb-bcf1-eb9a5ce5f181",
+        preview_image_url=r"https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F1.jpg?alt=media&token=5d3de029-4a61-4adb-bcf1-eb9a5ce5f181"
     )
     line_bot_api.reply_message(
         event.reply_token,
-        messages=[text_message, image_message]
+        messages=[text_message1, text_message2, image_message]
     )
 
 
@@ -309,6 +398,7 @@ def handle_postback(event):
     try:
         data = event.postback.data
         print('postback event')
+        print(data)
         # print(event)
         user_id = event.source.user_id
         if data == 'not_provide_phone':
@@ -335,8 +425,24 @@ def handle_postback(event):
         elif data == 'provide_birthday':
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=f"""請於下方輸入你的生日並傳送(ex. yyyy-mm-dd)""")
+                FlexSendMessage(alt_text="選擇生日日期", contents=birthday_picker_flex_message)
             )
+        elif data == 'birthday_picker':
+            try:
+                print(event.postback.params['date'])
+
+                model.write_user_birthday(event.postback.params['date'], user_id)
+                line_bot_api.push_message(
+                    user_id,
+                    TextSendMessage(text=f"""感謝你填寫基本資料！
+現在，來試試看發送一張照片或一段溫暖的文字給親人吧！讓他們感受到你的關心！
+
+請於下方/拍照/傳送照片/傳送文字""")
+                )
+                user_states[user_id] = 'DONE'
+            except Exception as e:
+                print(f'Error processing birthday-picker: {e}')
+
     except Exception as e:
         print(f'exception: {e}')
 
