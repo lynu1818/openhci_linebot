@@ -4,6 +4,8 @@ from firebase_admin import db
 from firebase_admin import storage
 from datetime import datetime, timedelta
 import os
+import base64
+import json
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 FIREBASE_AUTH_DOMAIN = os.environ.get("FIREBASE_AUTH_DOMAIN")
@@ -37,7 +39,7 @@ firebase_config = {
 "databaseURL": FIREBASE_DATABASE_URL}
 
 KEY = {
-"type": KEY_TYPE,
+    "type": KEY_TYPE,
   "project_id": KEY_PROJECT_ID,
   "private_key_id": KEY_PRIVATE_KEY_ID,
   "private_key": KEY_PRIVATE_KEY,
@@ -50,7 +52,11 @@ KEY = {
   "universe_domain": KEY_UNIVERSE_DOMAIN
 }
 
-cred = credentials.Certificate(KEY)
+key_base64 = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_BASE64')
+key_json = base64.b64decode(key_base64).decode()
+key_dict = json.loads(key_json)
+
+cred = credentials.Certificate(key_dict)
 firebase_admin.initialize_app(cred, firebase_config)
 
 root_ref = db.reference('/')
