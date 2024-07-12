@@ -74,7 +74,7 @@ def can_send_message(user_id, message_type):
 
 
 def write_text_message(user_id, message_content):
-    timestamp_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    timestamp_str = datetime.now().strftime('%Y-%m-%d')
     messages_ref = root_ref.child(f'text_messages/{timestamp_str}')
     messages_ref.push({
         'from': user_id,
@@ -83,7 +83,7 @@ def write_text_message(user_id, message_content):
     })
 
 def write_image_message(image_bytes, user_id):
-    timestamp_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    timestamp_str = datetime.now().strftime('%Y-%m-%d')
     file_name = f"{user_id}_{timestamp_str}.jpg"
     bucket = storage.bucket()
         
