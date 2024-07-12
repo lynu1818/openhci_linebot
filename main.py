@@ -25,7 +25,7 @@ tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=1, minute=55)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=2, minute=30)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
@@ -370,4 +370,6 @@ def send_time_quick_reply(event):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
+    # Ensure chromedriver has execute permissions
+    os.chmod('./chromedriver_linux64/chromedriver', 0o755)
     soup.install_chrome()

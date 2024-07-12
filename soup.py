@@ -10,7 +10,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 import re
 import model
 import subprocess
-import os
 
 # Function to install Google Chrome
 def install_chrome():
@@ -25,11 +24,7 @@ def install_chrome():
         print(f"Error during Chrome installation: {e}")
         raise
 
-# Install Chrome if not already installed
-install_chrome()
 
-# Ensure chromedriver has execute permissions
-os.chmod('./chromedriver_linux64/chromedriver', 0o755)
 
 def fetch_date_data():
     print("fetch date data")
