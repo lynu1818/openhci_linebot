@@ -23,8 +23,8 @@ load_dotenv()
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=0, minute=0)
-scheduler.add_job(model.write_torn, 'cron', hour=0, minute=30, args=[False])
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=0, minute=40)
+scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
 

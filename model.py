@@ -266,7 +266,7 @@ def write_torn(torn_to_write):
     
     try:
         torn_ref.set(torn_to_write)
-        print("Updated torn to True")
+        print(f"Updated torn to {torn_to_write}")
     except Exception as e:
         print(f"Failed to update date or torn: {e}")
 
