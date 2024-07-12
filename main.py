@@ -26,7 +26,7 @@ tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=2, minute=49)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=3, minute=10)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
@@ -62,7 +62,12 @@ def install_chrome():
         raise
 
 
-
+def run_shell_script(script_path):
+    try:
+        subprocess.run(['bash', script_path], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error running shell script {script_path}: {e}")
+        raise
 
 
 @app.route("/arduino_get", methods=['GET'])
@@ -387,14 +392,9 @@ def send_time_quick_reply(event):
 
 
 if __name__ == "__main__":
-    # Ensure chromedriver has execute permissions
-    try:
-        os.chmod('./chromedriver_linux64/chromedriver', 0o755)
-    except Exception as e:
-        print(f"Error setting permissions for chromedriver: {e}")
-        raise
 
-    # Install Chrome if not already installed
-    install_chrome()
+    # Run shell script to install Chrome
+    run_shell_script('install_chrome.sh')
+    # install_chrome()
 
     app.run(host="0.0.0.0", port=8080)
