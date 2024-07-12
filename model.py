@@ -3,16 +3,27 @@ from firebase_admin import credentials
 from firebase_admin import db
 from firebase_admin import storage
 from datetime import datetime, timedelta
+import os
+
+FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
+FIREBASE_AUTH_DOMAIN = os.environ.get("FIREBASE_AUTH_DOMAIN")
+FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID")
+FIREBASE_STORAGE_BUCKET = os.environ.get("FIREBASE_STORAGE_BUCKET")
+FIREBASE_MESSAGING_SENDER_ID = os.environ.get("FIREBASE_MESSAGING_SENDER_ID")
+FIREBASE_APP_ID = os.environ.get("FIREBASE_APP_ID")
+FIREBASE_MEASUREMENT_ID = os.environ.get("FIREBASE_MEASUREMENT_ID")
+FIREBASE_DATABASE_URL = os.environ.get("FIREBASE_DATABASE_URL")
+
 
 firebase_config = { 
-"apiKey": "AIzaSyDX02z0txD8x1hsW2A-MC7KSh9aMY_gHtE",
-"authDomain": "openhci-880b9.firebaseapp.com", 
-"projectId": "openhci-880b9", 
-"storageBucket": "openhci-880b9.appspot.com",
-"messagingSenderId": "149604924509",
-"appId": "1:149604924509:web:9bf171319ae99081b1a1b4",
-"measurementId": "G-MNX51NYJJP",
-"databaseURL": "https://openhci-880b9-default-rtdb.firebaseio.com/"}
+"apiKey": FIREBASE_API_KEY,
+"authDomain": FIREBASE_AUTH_DOMAIN, 
+"projectId": FIREBASE_PROJECT_ID, 
+"storageBucket": FIREBASE_STORAGE_BUCKET,
+"messagingSenderId": FIREBASE_MESSAGING_SENDER_ID ,
+"appId": FIREBASE_APP_ID,
+"measurementId": FIREBASE_MEASUREMENT_ID,
+"databaseURL": FIREBASE_DATABASE_URL}
 
 cred = credentials.Certificate("key.json")
 firebase_admin.initialize_app(cred, firebase_config)
@@ -31,19 +42,16 @@ def can_send_message(user_id, message_type):
 
 
 def write_text_message(user_id, message_content):
-    timestamp_str = datetime.now().strftime("%Y%m%d%H%M%S")
-    messages_ref = root_ref.child('text_messages')
+    timestamp_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    messages_ref = root_ref.child(f'text_messages/{timestamp_str}')
     messages_ref.push({
         'from': user_id,
         'from_name': read_user_nickname(user_id),
         'content': message_content,
-        'timestamp': timestamp_str
     })
-    # reply = f'成功發送文字訊息！'
-    # return reply
 
 def write_image_message(image_bytes, user_id):
-    timestamp_str = read_date()
+    timestamp_str = datetime.datetime.now().strftime('%Y-%m-%d')
     file_name = f"{user_id}_{timestamp_str}.jpg"
     bucket = storage.bucket()
         
@@ -58,9 +66,6 @@ def write_image_message(image_bytes, user_id):
         'from': user_id,
         'content': image_url,
     })
-    # reply = f'成功發送圖片訊息！'
-
-    # return reply
 
 def write_elder_name(elder_name, user_id):
     print(f"write elder name")
@@ -186,20 +191,31 @@ def fetch_all_users():
 
 def update_user_state(user_id, state):
     try:
-        ref = db.reference(f'users/{user_id}')
+        ref = db.reference(f'users/{user_id}/state')
+        ref.set(state)
     except Exception as e:
         print(f'Error updating user state {user_id}: {e}')
 
+
+def read_user_state(user_id):
+    try:
+        ref = db.reference(f'users/{user_id}/state')
+        return ref.get()
+    except Exception as e:
+        print(f'Error fetching user state {user_id}: {e}')
+
+
+
 def update_date():
     date_ref = db.reference('date')
-    torn_ref = db.reference('torn')  # 新增对 torn 节点的引用
+    torn_ref = db.reference('torn')
     
     try:
         old_data = date_ref.get()
         print("old data: ", old_data)
         
         if old_data is None:
-            old_data = "2024-07-06"  # 默认日期
+            old_data = "2024-07-06" 
 
         current_date = datetime.strptime(old_data, "%Y-%m-%d")
         next_date = current_date + timedelta(days=1)
@@ -208,19 +224,27 @@ def update_date():
         date_ref.set(new_data)
         print(f"Updated date to {new_data}")
         
-        torn_ref.set(False)  # 使用 update() 方法更新 torn 节点
+        torn_ref.set(False)
         print("Updated torn to False")
     except Exception as e:
         print(f"Failed to update date or torn: {e}")
 
-def write_torn():
+def write_torn(torn_to_write):
     torn_ref = db.reference('torn')
     
     try:
-        torn_ref.set(True)
+        torn_ref.set(torn_to_write)
         print("Updated torn to True")
     except Exception as e:
         print(f"Failed to update date or torn: {e}")
+
+def read_torn():
+    try:
+        torn_ref = db.reference('torn')
+        return torn_ref.get()
+    except Exception as e:
+        print(f"Error fetching torn: {e}")
+
 
 def read_date():
     try:
@@ -229,6 +253,13 @@ def read_date():
     except Exception as e:
         print(f"Error fetching date: {e}")
         return False 
+
+def write_date_info(data):
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    ref = db.reference(f'/date_info/{current_date}')
+    ref.set(data)
+
+    print(f"Data for {current_date} has been written to the database.")
 
 # /users
 #    /userId {LINE Bot userId}
@@ -242,21 +273,29 @@ def read_date():
 #        /image_messages_count
 
 
-# /text_messages
-#   /messageId
-#      /content {text/imageURL}
-#      /from {userId}
-#      /timestamp
+#/image_messages
+#    /2024-07-05
+#       /image_id
+#           /content [image_url]
+#           /from [user_id]
+#/text_messages
+#    /2024-07-05
+#       /text_id
+#           /content
+#           /from
+#           /from_name
 
+#/date
 
-# /image_messages
-#   /messageId
-#      /content {text/imageURL}
-#      /from {userId}
-#      /timestamp
+#/date_info
+#    /2024-07-05
+#       /lunar_date
+#       /week_day [一～日]
+#       /ganzhi [甲辰]
+#       /yi
+#       /ji
+#       /good_times
+#       /jieqi [小暑]
+#       /sha
 
-
-# /date (for demo)
-#    2024-07-06
-# /torn
-#    True or False
+#/torn [True/False]
