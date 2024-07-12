@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 
 import json
 
@@ -48,52 +48,49 @@ app = Flask(__name__)
 @app.route("/arduino_get", methods=['GET'])
 def arduino_get():
     print('OK')
-    return jsonify({'status': 'OK'})
+    return 'OK'
 
 receiving_audio = False
 
 # TODO: Maybe 接收撕日曆的訊號
 @app.route("/arduino_post", methods=['POST'])
 def arduino_post():
-    try:
-        body = request.get_data(as_text=True)
-        json_data = json.loads(body)
-        print(json_data)
-        if 'torn' in json_data:  # 有撕日曆訊號
-            if json_data['torn'] == 1:
-                notification.send_tear_notification()
-                model.write_torn(True)
-        if 'audio' in json_data:
-            global receiving_audio
-            if json_data['audio'] == 1 and receiving_audio == False:
-                print('send audio')
-                receiving_audio = True
-                line_bot_api.broadcast([TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F%E9%98%BF%E5%AC%A4%E9%8C%84%E9%9F%B3.m4a?alt=media&token=d3cb71e4-735b-442a-9448-d2639f9df1de', duration=4000)])
-            elif json_data['audio'] == 0 and receiving_audio == True:
-                receiving_audio = False
-        return jsonify({'status': 'OK'})
-    except Exception as e:
-        print(f'Exception occurred: {e}')
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    body = request.get_data(as_text=True)
+    json_data = json.loads(body)
+    print(json_data)
+    if 'torn' in json_data:   # 有撕日曆訊號
+        if json_data['torn'] == 1:
+            notification.send_tear_notification()
+            model.write_torn(True)
+    if 'audio' in json_data:
+        global receiving_audio
+        if json_data['audio'] == 1 and receiving_audio == False:
+            print('send audio')
+            receiving_audio = True
+            line_bot_api.broadcast([TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F%E9%98%BF%E5%AC%A4%E9%8C%84%E9%9F%B3.m4a?alt=media&token=d3cb71e4-735b-442a-9448-d2639f9df1de', duration=4000)])
+        elif json_data['audio'] == 0 and receiving_audio == True:
+            receiving_audio = False
+
+    return 'OK'
 
 def test_arduino_post():
     notification.send_tear_notification()
 
 #TODO: 加 emoji
 
-@app.route("/webhook", methods=['POST'])
+@app.route("/", methods=['POST'])
 def linebot():
     body = request.get_data(as_text=True)
     try:
         json_data = json.loads(body)
         print(json_data)
-        signature = request.headers['X-Line-Signature']  # 加入回傳的 headers
-        handler.handle(body, signature)
+        signature = request.headers['X-Line-Signature']      # 加入回傳的 headers
+        handler.handle(body, signature)  
     except Exception as e:
         print(f'Exception occurred: {e}')
         print(body)
-        return jsonify({'status': 'error', 'message': str(e)}), 403
-    return jsonify({'status': 'OK'})  # 驗證 Webhook 使用，不能省略
+        return '403'
+    return 'OK'                                              # 驗證 Webhook 使用，不能省略
 
 
 # TODO: 重傳 flex message 1
@@ -369,5 +366,4 @@ def send_time_quick_reply(event):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=8080)
