@@ -150,13 +150,13 @@ def handle_text_message(event):
                 preview_image_url=r'https://firebasestorage.googleapis.com/v0/b/openhci-880b9.appspot.com/o/default%2F2.jpg?alt=media&token=cf1da200-7ae5-4b04-b149-48a68250479a'    
             )
         )
-        model.update_user_state('GET_NICKNAME')
+        model.update_user_state(user_id, 'GET_NICKNAME')
     elif user_state == 'GET_NICKNAME':
         model.write_user_nickname(text, user_id)
         line_bot_api.reply_message(
             event.reply_token,
             messages=FlexSendMessage(alt_text="flex-message", contents=flex_message))
-        model.update_user_state('GET_ELDER_PHONE')
+        model.update_user_state(user_id, 'GET_ELDER_PHONE')
     elif user_state == 'GET_ELDER_PHONE':
         
         model.write_elder_phone(text, user_id)
@@ -164,7 +164,7 @@ def handle_text_message(event):
                 user_id,
                 messages=FlexSendMessage(alt_text="flex-message2", contents=flex_message2)
         )
-        model.update_user_state('GET_USER_BIRTHDAY')
+        model.update_user_state(user_id, 'GET_USER_BIRTHDAY')
 
     elif user_state == 'GET_USER_BIRTHDAY':
         model.write_user_birthday(text, user_id)
@@ -174,7 +174,7 @@ def handle_text_message(event):
                             現在，來試試看發送一張照片或一段溫暖的文字給親人吧！讓他們感受到你的關心！
                             請於下方/拍照/傳送照片/傳送文字""")
         )
-        model.update_user_state('DONE')
+        model.update_user_state(user_id, 'DONE')
     elif user_state == 'DONE':
         try:
             torn = model.read_torn()
