@@ -9,6 +9,27 @@ import chromedriver_binary
 from webdriver_manager.chrome import ChromeDriverManager
 import re
 import model
+import subprocess
+import os
+
+# Function to install Google Chrome
+def install_chrome():
+    try:
+        subprocess.run("apt-get update", shell=True, check=True)
+        subprocess.run("apt-get install -y wget gnupg2", shell=True, check=True)
+        subprocess.run("wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -", shell=True, check=True)
+        subprocess.run("sh -c 'echo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\" >> /etc/apt/sources.list.d/google-chrome.list'", shell=True, check=True)
+        subprocess.run("apt-get update", shell=True, check=True)
+        subprocess.run("apt-get install -y google-chrome-stable", shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error during Chrome installation: {e}")
+        raise
+
+# Install Chrome if not already installed
+install_chrome()
+
+# Ensure chromedriver has execute permissions
+os.chmod('./chromedriver_linux64/chromedriver', 0o755)
 
 def fetch_date_data():
     print("fetch date data")
@@ -22,7 +43,9 @@ def fetch_date_data():
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--remote-debugging-port=9222")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+    chromedriver_path = "./chromedriver_linux64/chromedriver"
+    service = Service(chromedriver_path)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.get(url)
     page_content = driver.page_source
 
