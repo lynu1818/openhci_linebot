@@ -81,7 +81,7 @@ def test_arduino_post():
 
 #TODO: 加 emoji
 
-@app.route("/", methods=['POST'])
+@app.route("/webhook", methods=['POST'])
 def linebot():
     body = request.get_data(as_text=True)
     try:
@@ -369,4 +369,5 @@ def send_time_quick_reply(event):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
