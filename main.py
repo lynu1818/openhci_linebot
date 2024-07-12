@@ -24,7 +24,7 @@ load_dotenv()
 scheduler = BackgroundScheduler()
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
 scheduler.add_job(soup.fetch_date_data, 'cron', hour=0, minute=0)
-scheduler.add_job(model.write_torn(False), 'cron', hour=0, minute=0)
+scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
 
@@ -75,6 +75,7 @@ def arduino_post():
 
 def test_arduino_post():
     notification.send_tear_notification()
+    model.write_torn(True)
 
 #TODO: 加 emoji
 

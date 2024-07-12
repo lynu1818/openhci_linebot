@@ -66,7 +66,6 @@ def send_tear_notification():
     torn = model.read_torn()
     if torn == False:
         print("send tear")
-        model.write_torn(True)
         try:
             users = model.fetch_all_users()
             for user_id, user_data in users.items():
