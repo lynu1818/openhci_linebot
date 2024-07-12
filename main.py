@@ -26,7 +26,7 @@ tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=3, minute=10)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=3, minute=28)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
@@ -392,9 +392,5 @@ def send_time_quick_reply(event):
 
 
 if __name__ == "__main__":
-
-    # Run shell script to install Chrome
-    run_shell_script('install_chrome.sh')
-    # install_chrome()
 
     app.run(host="0.0.0.0", port=8080)
