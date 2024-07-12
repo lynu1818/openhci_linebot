@@ -22,7 +22,7 @@ def fetch_date_data():
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--remote-debugging-port=9222")
 
-    driver = webdriver.Chrome(service=ChromeDriverManager(driver_version="126.0.6478.126").install(), options=chrome_options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
     driver.get(url)
     page_content = driver.page_source
 
