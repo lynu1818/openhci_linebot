@@ -20,6 +20,7 @@ def install_chrome():
         subprocess.run("sh -c 'echo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\" >> /etc/apt/sources.list.d/google-chrome.list'", shell=True, check=True)
         subprocess.run("apt-get update", shell=True, check=True)
         subprocess.run("apt-get install -y google-chrome-stable", shell=True, check=True)
+        print("install chrome")
     except subprocess.CalledProcessError as e:
         print(f"Error during Chrome installation: {e}")
         raise

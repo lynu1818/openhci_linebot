@@ -25,7 +25,7 @@ tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=2, minute=30)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=2, minute=43)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
