@@ -14,6 +14,17 @@ FIREBASE_APP_ID = os.environ.get("FIREBASE_APP_ID")
 FIREBASE_MEASUREMENT_ID = os.environ.get("FIREBASE_MEASUREMENT_ID")
 FIREBASE_DATABASE_URL = os.environ.get("FIREBASE_DATABASE_URL")
 
+KEY_TYPE = os.environ.get("KEY_TYPE")
+KEY_PROJECT_ID = os.environ.get("KEY_PROJECT_ID")
+KEY_PRIVATE_KEY_ID = os.environ.get("KEY_PRIVATE_KEY_ID")
+KEY_PRIVATE_KEY = os.environ.get("KEY_PRIVATE_KEY")
+KEY_CLIENT_EMAIL = os.environ.get("KEY_CLIENT_EMAIL")
+KEY_CLIENT_ID = os.environ.get("KEY_CLIENT_ID")
+KEY_AUTH_URI = os.environ.get("KEY_AUTH_URI")
+KEY_TOKEN_URI = os.environ.get("KEY_TOKEN_URI")
+KEY_PROVIDER_CERT_URL = os.environ.get("KEY_PROVIDER_CERT_URL")
+KEY_CLIENT_CERT_URL = os.environ.get("KEY_CLIENT_CERT_URL")
+KEY_UNIVERSE_DOMAIN = os.environ.get("KEY_UNIVERSE_DOMAIN")
 
 firebase_config = { 
 "apiKey": FIREBASE_API_KEY,
@@ -25,7 +36,21 @@ firebase_config = {
 "measurementId": FIREBASE_MEASUREMENT_ID,
 "databaseURL": FIREBASE_DATABASE_URL}
 
-cred = credentials.Certificate("key.json")
+KEY = {
+"type": KEY_TYPE,
+  "project_id": KEY_PROJECT_ID,
+  "private_key_id": KEY_PRIVATE_KEY_ID,
+  "private_key": KEY_PRIVATE_KEY,
+  "client_email": KEY_CLIENT_EMAIL,
+  "client_id": KEY_CLIENT_ID,
+  "auth_uri": KEY_AUTH_URI,
+  "token_uri": KEY_TOKEN_URI,
+  "auth_provider_x509_cert_url": KEY_PROVIDER_CERT_URL,
+  "client_x509_cert_url": KEY_CLIENT_CERT_URL,
+  "universe_domain": KEY_UNIVERSE_DOMAIN
+}
+
+cred = credentials.Certificate(KEY)
 firebase_admin.initialize_app(cred, firebase_config)
 
 root_ref = db.reference('/')
