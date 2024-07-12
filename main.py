@@ -12,6 +12,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 import random
 import time
+import pytz
 import model
 import soup
 import notification
@@ -20,10 +21,11 @@ load_dotenv()
 
 
 
+tz = pytz.timezone('Asia/Taipei')
 
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler(timezone=tz)
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=0, minute=40)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=1, minute=00)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
