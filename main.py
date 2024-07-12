@@ -7,6 +7,7 @@ from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import UnfollowEvent, ImageMessage, AudioSendMessage,  MessageEvent, TextMessage, ImageSendMessage, FlexSendMessage, FollowEvent, PostbackEvent, TextSendMessage, LocationSendMessage, QuickReply, QuickReplyButton, MessageAction, DatetimePickerAction
 
 import os
+import subprocess
 from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
@@ -25,7 +26,7 @@ tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
 scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=2, minute=43)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=2, minute=49)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
@@ -44,6 +45,23 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 
 app = Flask(__name__)
+
+
+def install_chrome():
+    try:
+        print("Starting Chrome installation...")
+        subprocess.run("apt-get update", shell=True, check=True)
+        subprocess.run("apt-get install -y wget gnupg2", shell=True, check=True)
+        subprocess.run("wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -", shell=True, check=True)
+        subprocess.run("sh -c 'echo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\" >> /etc/apt/sources.list.d/google-chrome.list'", shell=True, check=True)
+        subprocess.run("apt-get update", shell=True, check=True)
+        subprocess.run("apt-get install -y google-chrome-stable", shell=True, check=True)
+        print("Chrome installed successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error during Chrome installation: {e}")
+        raise
+
+
 
 
 
@@ -369,7 +387,14 @@ def send_time_quick_reply(event):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
     # Ensure chromedriver has execute permissions
-    os.chmod('./chromedriver_linux64/chromedriver', 0o755)
-    soup.install_chrome()
+    try:
+        os.chmod('./chromedriver_linux64/chromedriver', 0o755)
+    except Exception as e:
+        print(f"Error setting permissions for chromedriver: {e}")
+        raise
+
+    # Install Chrome if not already installed
+    install_chrome()
+
+    app.run(host="0.0.0.0", port=8080)
