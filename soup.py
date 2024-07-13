@@ -7,9 +7,14 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import chromedriver_binary
 from webdriver_manager.chrome import ChromeDriverManager
+import pytz
 import re
 import model
 import subprocess
+
+def get_current_time_in_taiwan():
+    taiwan_tz = pytz.timezone('Asia/Taipei')
+    return datetime.now(taiwan_tz)
 
 # Function to install Google Chrome
 def install_chrome():
@@ -28,7 +33,8 @@ def install_chrome():
 
 
 def fetch_date_data():
-    print("fetch date data")
+    current_time_in_taiwan = get_current_time_in_taiwan()
+    print(f"Fetching data at Taiwan time: {current_time_in_taiwan}")
     url = "https://ecal.click108.com.tw"
 
     chrome_options = Options()
