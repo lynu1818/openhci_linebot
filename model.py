@@ -22,7 +22,7 @@ def send_audio(url):
         if user_id:
             line_bot_api.push_message(
                 user_id, 
-                [TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url)]
+                [TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=5000)]
             )
 
 
