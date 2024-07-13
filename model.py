@@ -6,7 +6,19 @@ from datetime import datetime, timedelta
 import os
 import base64
 import json
-import main
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
+from linebot.models import UnfollowEvent, ImageMessage, AudioSendMessage,  MessageEvent, TextMessage, ImageSendMessage, FlexSendMessage, FollowEvent, PostbackEvent, TextSendMessage, LocationSendMessage, QuickReply, QuickReplyButton, MessageAction, DatetimePickerAction
+
+
+
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+
+def send_audio(url):
+    print('send audio')
+    line_bot_api.broadcast([TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=4000)])
+
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 FIREBASE_AUTH_DOMAIN = os.environ.get("FIREBASE_AUTH_DOMAIN")
@@ -307,8 +319,6 @@ def audio_listener(event):
     ref = db.reference(audio_reference_path)
     data = ref.get()
     print(f'Read data: {data}')
-
-    main.send_audio(data)
 
 db.reference(audio_reference_path).listen(audio_listener)
 
