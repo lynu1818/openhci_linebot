@@ -319,6 +319,7 @@ def audio_listener(event):
     ref = db.reference(audio_reference_path)
     data = ref.get()
     print(f'Read data: {data}')
+    send_audio(data)
 
 db.reference(audio_reference_path).listen(audio_listener)
 
