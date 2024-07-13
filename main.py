@@ -25,8 +25,8 @@ load_dotenv()
 tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
-scheduler.add_job(notification.send_notification_message, 'cron', hour=8, minute=0)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=9, minute=5)
+scheduler.add_job(notification.send_notification_message, 'cron', hour=9, minute=5)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=0, minute=5)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
@@ -97,6 +97,12 @@ def arduino_post():
             receiving_audio = False
 
     return 'OK'
+
+
+def send_audio(url):
+    print('send audio')
+    line_bot_api.broadcast([TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=4000)])
+
 
 def test_arduino_post():
     notification.send_tear_notification()

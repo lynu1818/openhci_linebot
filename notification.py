@@ -39,6 +39,7 @@ def random_notification_message(user_nickname, elder_name) -> str:
 
 
 def send_notification_message():
+    print("send notification message")
     users = model.fetch_all_users()
     for user_id, user_data in users.items():
         user_nickname = user_data.get('nickName')

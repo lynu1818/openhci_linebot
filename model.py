@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import os
 import base64
 import json
+import main
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
 FIREBASE_AUTH_DOMAIN = os.environ.get("FIREBASE_AUTH_DOMAIN")
@@ -293,6 +294,24 @@ def write_date_info(data):
 
     print(f"Data for {current_date} has been written to the database.")
 
+
+
+audio_timestamp_str = datetime.now().strftime('%Y-%m-%d')
+audio_reference_path = f'audio/{audio_timestamp_str}'
+
+def audio_listener(event):
+    print(f'Event type: {event.event_type}')
+    print(f'Path: {event.path}')
+    print(f'Data: {event.data}')
+
+    ref = db.reference(audio_reference_path)
+    data = ref.get()
+    print(f'Read data: {data}')
+
+    main.send_audio(data)
+
+db.reference(audio_reference_path).listen(audio_listener)
+
 # /users
 #    /userId {LINE Bot userId}
 #        /name
@@ -316,6 +335,10 @@ def write_date_info(data):
 #           /content
 #           /from
 #           /from_name
+#/audio_messages
+#    /2024-07-05
+#        /audio_id
+#           /content [audio_url]
 
 #/date
 
