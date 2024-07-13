@@ -311,10 +311,31 @@ def write_date_info(data):
 audio_timestamp_str = datetime.now().strftime('%Y-%m-%d')
 audio_reference_path = f'audio_messages/{audio_timestamp_str}'
 
+def send_tear_notification():
+    print("send tear")
+    try:
+        users = fetch_all_users()
+        for user_id, user_data in users.items():
+            user_nickname = user_data.get('nickName')
+            elder_name = user_data.get('elderName')
+            if user_id:
+                line_bot_api.push_message(
+                    user_id, 
+                    TextSendMessage(text=f"嗨！{user_nickname}，\n今天{elder_name}與日曆互動了！您的關心和分享讓他們每天都充滿喜悅。繼續保持這份互動，讓家人之間的感情更加親密吧！")
+                )
+    except LineBotApiError as e:
+            print(f"Unexpected error: {e}")
+
+def torn_listener(event):
+    print("torn event")
+    ref = db.reference("torn")
+    data = ref.get()
+    print(f'Read data: {data}')
+    if data == True:
+        send_tear_notification()
+
 def audio_listener(event):
-    print(f'Event type: {event.event_type}')
-    print(f'Path: {event.path}')
-    print(f'Data: {event.data}')
+    print("audio message event")
 
     ref = db.reference(audio_reference_path)
     data = ref.get()
