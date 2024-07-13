@@ -309,7 +309,7 @@ def write_date_info(data):
 
 
 audio_timestamp_str = datetime.now().strftime('%Y-%m-%d')
-audio_reference_path = f'audio/{audio_timestamp_str}'
+audio_reference_path = f'audio_messages/{audio_timestamp_str}'
 
 def audio_listener(event):
     print(f'Event type: {event.event_type}')
