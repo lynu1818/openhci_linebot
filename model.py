@@ -343,6 +343,7 @@ def audio_listener(event):
     send_audio(data)
 
 db.reference(audio_reference_path).listen(audio_listener)
+db.reference('torn').listen(torn_listener)
 
 # /users
 #    /userId {LINE Bot userId}
