@@ -15,16 +15,7 @@ from linebot.models import UnfollowEvent, ImageMessage, AudioSendMessage,  Messa
 LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 
-def send_audio(url):
-    print('send audio')
-    users = fetch_all_users()
-    if url != None:
-        for user_id, user_data in users.items():
-            if user_id:
-                line_bot_api.push_message(
-                    user_id, 
-                    [TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=5000)]
-                )
+
 
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
@@ -315,8 +306,7 @@ def write_date_info(data):
 
 
 
-audio_timestamp_str = datetime.now().strftime('%Y-%m-%d')
-audio_reference_path = f'audio_messages/{audio_timestamp_str}'
+
 
 def send_tear_notification():
     print("send tear")
@@ -340,6 +330,21 @@ def torn_listener(event):
     print(f'Read data: {data}')
     if data == True:
         send_tear_notification()
+
+audio_timestamp_str = datetime.now().strftime('%Y-%m-%d')
+audio_reference_path = f'audio_messages/{audio_timestamp_str}'
+
+
+def send_audio(url):
+    print('send audio')
+    users = fetch_all_users()
+    if url != None:
+        for user_id, user_data in users.items():
+            if user_id:
+                line_bot_api.push_message(
+                    user_id, 
+                    [TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=4000)]
+                )
 
 def audio_listener(event):
     print("audio message event")
