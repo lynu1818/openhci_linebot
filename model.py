@@ -93,9 +93,12 @@ def write_text_message(user_id, message_content):
         'content': message_content,
     })
 
+
+
 def write_image_message(image_bytes, user_id):
-    timestamp_str = datetime.now().strftime('%Y-%m-%d')
-    file_name = f"{user_id}_{timestamp_str}.jpg"
+    timestamp_str_storage = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    timestamp_str_database = datetime.now().strftime('%Y-%m-%d')
+    file_name = f"{user_id}_{timestamp_str_storage}.jpg"
     bucket = storage.bucket()
         
     blob = bucket.blob("images/" + file_name)
@@ -104,7 +107,7 @@ def write_image_message(image_bytes, user_id):
     image_url = blob.public_url
     
     
-    messages_ref = root_ref.child(f'image_messages/{timestamp_str}')
+    messages_ref = root_ref.child(f'image_messages/{timestamp_str_database}')
     messages_ref.push({
         'from': user_id,
         'content': image_url,
