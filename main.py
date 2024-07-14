@@ -25,8 +25,8 @@ load_dotenv()
 tz = pytz.timezone('Asia/Taipei')
 
 scheduler = BackgroundScheduler(timezone=tz)
-scheduler.add_job(notification.send_notification_message, 'cron', hour=9, minute=5)
-scheduler.add_job(soup.fetch_date_data, 'cron', hour=0, minute=5)
+scheduler.add_job(notification.send_notification_message, 'cron', hour=10, minute=10)
+scheduler.add_job(soup.fetch_date_data, 'cron', hour=10, minute=10)
 scheduler.add_job(model.write_torn, 'cron', hour=0, minute=0, args=[False])
 scheduler.start()
 
@@ -47,19 +47,6 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 app = Flask(__name__)
 
 
-def install_chrome():
-    try:
-        print("Starting Chrome installation...")
-        subprocess.run("apt-get update", shell=True, check=True)
-        subprocess.run("apt-get install -y wget gnupg2", shell=True, check=True)
-        subprocess.run("wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -", shell=True, check=True)
-        subprocess.run("sh -c 'echo \"deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main\" >> /etc/apt/sources.list.d/google-chrome.list'", shell=True, check=True)
-        subprocess.run("apt-get update", shell=True, check=True)
-        subprocess.run("apt-get install -y google-chrome-stable", shell=True, check=True)
-        print("Chrome installed successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error during Chrome installation: {e}")
-        raise
 
 
 def run_shell_script(script_path):
