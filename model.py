@@ -18,12 +18,13 @@ line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 def send_audio(url):
     print('send audio')
     users = fetch_all_users()
-    for user_id, user_data in users.items():
-        if user_id:
-            line_bot_api.push_message(
-                user_id, 
-                [TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=5000)]
-            )
+    if url != None:
+        for user_id, user_data in users.items():
+            if user_id:
+                line_bot_api.push_message(
+                    user_id, 
+                    [TextSendMessage(text="阿嬤傳來了語音訊息！"), AudioSendMessage(original_content_url=url, duration=5000)]
+                )
 
 
 FIREBASE_API_KEY = os.environ.get("FIREBASE_API_KEY")
