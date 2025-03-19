@@ -1,6 +1,9 @@
 # OpenHCI 2024 - LINE BOT Backend
 
+> [Demo Video](https://www.youtube.com/shorts/0jSNehWpa8o)
+
 This repository contains the backend for a LINE chatbot developed as part of the 2024 OpenHCI project.
+
 
 
 ## Setup
