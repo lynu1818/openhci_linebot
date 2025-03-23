@@ -36,3 +36,8 @@ This repository contains the backend for a LINE chatbot developed as part of the
     ngrok http http://localhost:8080
     ```
     Then set the ngrok URL as your webhook endpoint in the LINE Developers Console.
+
+
+## License
+
+This project is licensed under the MIT License – see the [LICENSE](./LICENSE) file for details.
